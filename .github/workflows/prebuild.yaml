@@ -40,7 +40,6 @@ jobs:
 
       - name: Build
         run: |
-          . prebuild/Linux/preinstall.sh
           cp prebuild/Linux/binding.gyp binding.gyp
           node-gyp rebuild -j 2
           . prebuild/Linux/bundle.sh
