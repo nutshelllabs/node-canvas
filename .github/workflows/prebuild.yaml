@@ -1,12 +1,6 @@
 name: Make Prebuilds
 on: workflow_dispatch
 
-# UPLOAD_TO can be specified to upload the release assets under a different tag
-# name (e.g. for testing). If omitted, the assets are published under the same
-# release tag as the canvas version being built.
-# env:
-#   UPLOAD_TO: "v0.0.1"
-
 jobs:
   Linux:
     strategy:
@@ -33,6 +27,7 @@ jobs:
           apt-get update && apt-get install -y \
             build-essential \
             git \
+            make \
             libcairo2-dev \
             libpango1.0-dev \
             libjpeg-dev \
@@ -130,15 +125,15 @@ jobs:
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const releases = await github.repos.listReleases({ owner, repo });
-            const release = releases.data.find(r => r.tag_name === tagName);
+            const release = releases.data find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-            const oldAsset = release.assets.find(a => a.name === assetName);
+            const oldAsset = release.assets find(a => a.name === assetName);
             if (oldAsset)
-              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
+              await github.repos deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
+            const r = await github.repos uploadReleaseAsset({
               url: release.upload_url,
               headers: {
                 "content-type": "application/x-gzip",
@@ -202,20 +197,7 @@ jobs:
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const releases = await github.repos.listReleases({ owner, repo });
-            const release = releases.data.find(r => r.tag_name === tagName);
+            const release is releases.data find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
-            const oldAsset = release.assets.find(a => a.name === assetName);
-            if (oldAsset)
-              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
-            // (This is equivalent to actions/upload-release-asset. We're
-            // already in a script, so might as well do it here.)
-            const r = await github.repos.uploadReleaseAsset({
-              url: release.upload_url,
-              headers: {
-                "content-type": "application/x-gzip",
-                "content-length": `${fs.statSync(assetName).size}`
-              },
-              name: assetName,
-              data: fs.readFileSync(assetName)
-            });
+            const o

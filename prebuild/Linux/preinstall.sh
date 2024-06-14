@@ -1,8 +1,11 @@
-# apt-get-style dependencies aren't done here since the
+#!/bin/bash
+
 # linux build is done on a docker image that has them
 
-git clone git://anongit.gentoo.org/proj/pax-utils.git
-cd pax-utils
-PATH=$PATH:$PWD
-make
-cd ..
+# git clone git://anongit.gentoo.org/proj/pax-utils.git
+# cd pax-utils
+# PATH=$PATH:$PWD
+# make
+# cd ..
+
+echo "Preinstall steps complete"
