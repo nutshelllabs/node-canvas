@@ -1,16 +1,3 @@
-# Triggering prebuilds:
-# 1. Create a draft release manually using the GitHub UI.
-# 2. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
-#    to build for.
-# 3. Set the `jobs.*.strategy.matrix.canvas_tag` arrays to the set of Canvas
-#    tags to build. (Usually this is a single tag, but can be an array when a
-#    new version of Node.js is released and older versions of Canvas need to be
-#    built.)
-# 4. Commit and push this file to master.
-# 5. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
-#    "Run workflow".
-# 6. Once the builds succeed, promote the draft release to a full release.
-
 name: Make Prebuilds
 on: workflow_dispatch
 
@@ -26,7 +13,7 @@ jobs:
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Linux
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     container:
       image: chearon/canvas-prebuilt:7
@@ -73,14 +60,14 @@ jobs:
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
-            const releases = await github.repos.listReleases({owner, repo});
+            const releases = await github.repos.listReleases({ owner, repo });
             const release = releases.data.find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
 
             const oldAsset = release.assets.find(a => a.name === assetName);
             if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
 
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
@@ -99,8 +86,9 @@ jobs:
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, macOS
-    runs-on: macos-latest
+        os: [x64, arm64]
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, macOS ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'arm64' && 'macos-latest-xlarge' || 'macos-latest' }}
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
     steps:
@@ -118,7 +106,7 @@ jobs:
           npm install --ignore-scripts
           . prebuild/macOS/preinstall.sh
           cp prebuild/macOS/binding.gyp binding.gyp
-          node-gyp rebuild -j 2
+          node-gyp rebuild -j 2 --arch=${{ matrix.os }}
           . prebuild/macOS/bundle.sh
 
       - name: Test binary
@@ -139,14 +127,14 @@ jobs:
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
-            const releases = await github.repos.listReleases({owner, repo});
+            const releases = await github.repos.listReleases({ owner, repo });
             const release = releases.data.find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
 
             const oldAsset = release.assets.find(a => a.name === assetName);
             if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
 
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
@@ -165,7 +153,7 @@ jobs:
       matrix:
         node: [18.12.0, 20.9.0]
         canvas_tag: [] # e.g. "v2.6.1"
-    name: ${{ matrix.canvas_tag}}, Node.js ${{ matrix.node }}, Windows
+    name: ${{ matrix.canvas_tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
       CANVAS_VERSION_TO_BUILD: ${{ matrix.canvas_tag }}
@@ -214,14 +202,14 @@ jobs:
             const tagName = process.env.UPLOAD_TO || process.env.CANVAS_VERSION_TO_BUILD;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
-            const releases = await github.repos.listReleases({owner, repo});
+            const releases = await github.repos.listReleases({ owner, repo });
             const release = releases.data.find(r => r.tag_name === tagName);
             if (!release)
               throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
 
             const oldAsset = release.assets.find(a => a.name === assetName);
             if (oldAsset)
-              await github.repos.deleteReleaseAsset({owner, repo, asset_id: oldAsset.id});
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
 
             // (This is equivalent to actions/upload-release-asset. We're
             // already in a script, so might as well do it here.)
